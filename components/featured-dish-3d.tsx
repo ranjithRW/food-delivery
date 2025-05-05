@@ -1,8 +1,8 @@
 // "use client"
 
 // import { useRef, useEffect } from "react"
-// import { Canvas } from "@react-three/fiber"
 // import { OrbitControls, PresentationControls, Environment, Html } from "@react-three/drei"
+// import { Canvas } from "@react-three/fiber"
 // import gsap from "gsap"
 // import { ScrollTrigger } from "gsap/ScrollTrigger"
 // import { Badge } from "@/components/ui/badge"
@@ -121,7 +121,7 @@ import { Leaf } from "lucide-react"
 
 function FruitModel() {
   const { scene } = useGLTF("/fruit.glb") // Adjust path if needed
-  return <primitive object={scene} scale={5} />;
+  return <primitive object={scene} scale={8} />;
 }
 
 export function FeaturedDish3D() {
