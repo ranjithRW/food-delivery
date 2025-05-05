@@ -64,7 +64,7 @@
 //                 <group position={[0, 0, 0]}>
 //                   <mesh>
 //                     <sphereGeometry args={[2, 32, 32]} />
-      
+
 //                     <meshStandardMaterial color="#E76F51" roughness={0.4} metalness={0.2} />
 //                   </mesh>
 
@@ -110,8 +110,8 @@
 
 "use client"
 
-import { useRef, useEffect, Suspense } from "react"
-import { Canvas } from "@react-three/fiber"
+import { useRef, useEffect, useState, Suspense } from "react"
+import { Canvas, useFrame } from "@react-three/fiber"
 import { OrbitControls, PresentationControls, Environment, Html, useGLTF } from "@react-three/drei"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -119,18 +119,34 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Leaf } from "lucide-react"
 
-function FruitModel() {
+// Rotating model component that responds to scroll
+function RotatingFruitModel({ scrollYProgress }) {
+  const modelRef = useRef()
   const { scene } = useGLTF("/fruit.glb") // Adjust path if needed
-  return <primitive object={scene} scale={8} />;
+
+  useFrame(() => {
+    if (modelRef.current && scrollYProgress.current) {
+      // Horizontal rotation (y-axis)
+      modelRef.current.rotation.y = scrollYProgress.current * Math.PI * 2
+
+      // Vertical rotation (x-axis)
+      modelRef.current.rotation.x = scrollYProgress.current * Math.PI
+    }
+  })
+
+  return <primitive ref={modelRef} object={scene} scale={8} />;
 }
 
 export function FeaturedDish3D() {
   const sectionRef = useRef(null)
   const textRef = useRef(null)
+  const canvasRef = useRef(null)
+  const scrollYProgress = useRef(0)
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
 
+    // Animation for text elements
     if (textRef.current && sectionRef.current) {
       gsap.fromTo(
         textRef.current,
@@ -148,6 +164,22 @@ export function FeaturedDish3D() {
         },
       )
     }
+
+    // Create scroll trigger for 3D model rotation
+    const scrollTrigger = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: "top bottom",
+      end: "bottom top",
+      scrub: 1,
+      onUpdate: (self) => {
+        scrollYProgress.current = self.progress;
+      },
+    })
+
+    return () => {
+      // Clean up scroll triggers
+      scrollTrigger.kill()
+    }
   }, [])
 
   return (
@@ -162,7 +194,7 @@ export function FeaturedDish3D() {
 
         <div className="grid gap-8 md:grid-cols-2">
           {/* 3D Dish Showcase */}
-          <div className="h-[400px] rounded-xl bg-white shadow-lg">
+          <div className="h-[400px] rounded-xl bg-white shadow-lg" ref={canvasRef}>
             <Canvas>
               <ambientLight intensity={0.5} />
               <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
@@ -172,10 +204,9 @@ export function FeaturedDish3D() {
                 rotation={[0, -Math.PI / 4, 0]}
                 polar={[-Math.PI / 4, Math.PI / 4]}
                 azimuth={[-Math.PI / 4, Math.PI / 4]}
-              >
-                <Suspense fallback={null}>
-                  <FruitModel />
-                </Suspense>
+              ></PresentationControls>
+              <Suspense fallback={null}>
+                <RotatingFruitModel scrollYProgress={scrollYProgress} />
                 <Html position={[0, 3, 0]} center>
                   <Badge className="bg-green-600 hover:bg-green-700">
                     <span className="flex items-center gap-1">
@@ -184,8 +215,11 @@ export function FeaturedDish3D() {
                   </Badge>
                 </Html>
                 <Environment preset="sunset" />
-              </PresentationControls>
+                <PresentationControls />
+              </Suspense>
+              {/* OrbitControls disabled to prevent conflict with scroll-based rotation */}
               <OrbitControls enableZoom={false} />
+
             </Canvas>
           </div>
 
