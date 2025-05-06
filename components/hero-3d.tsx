@@ -288,9 +288,7 @@ export function Hero3D() {
       <div ref={pizzaSectionRef} className="h-[200vh] bg-gradient-to-b from-white to-orange-50">
         <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-8">Watch Our Pizza Come Together</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-xl text-center">
-            Scroll down to see how we craft the perfect pizza, layer by layer.
-          </p>
+
 
           {/* Pizza Assembly Canvas */}
           <div className="h-[60vh] w-full max-w-2xl">
@@ -347,31 +345,12 @@ export function Hero3D() {
                     scale={1}
                     scrollY={scrollY}
                     appearAt={1000}
-                    finalY={0.6}
-                  />
+                    finalY={0.6} color={undefined}                  />
                 </Suspense>
               </group>
-
               <ScrollTracker setScrollY={setScrollY} />
               <OrbitControls enableZoom={false} enablePan={false} />
             </Canvas>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-lg text-gray-700">
-              Current Layer:
-              <span className="font-bold ml-2">
-                {scrollY < 100
-                  ? "Preparing..."
-                  : scrollY < 400
-                    ? "Crust"
-                    : scrollY < 700
-                      ? "Sauce"
-                      : scrollY < 1000
-                        ? "Cheese"
-                        : "Toppings"}
-              </span>
-            </p>
           </div>
         </div>
       </div>
