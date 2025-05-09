@@ -44,14 +44,19 @@ const PizzaModel = () => {
 }
 
 // Pizza layer component that creates geometric shapes instead of using GLB models
-const PizzaLayer = ({ layerType, position, rotation, scale, scrollY, appearAt, finalY = 0, color }) => {
+const PizzaLayer = ({ layerType, position, rotation, scale, scrollY, appearAt, finalY = 0, color, initialY }) => {
   const modelRef = useRef()
   const [visible, setVisible] = useState(false)
-  const [yPos, setYPos] = useState(position[1] + 10) // Start above final position
+  // const [yPos, setYPos] = useState(position[1] + 10) // Start above final position.  Removed as now using initialY
 
   useEffect(() => {
-    if (scrollY >= appearAt && !visible) {
-      setVisible(true)
+    // Calculate scroll position in a way that considers the component's appearAt
+    const currentScrollPosition = scrollY;
+
+
+    // Scroll Down Animations
+    if (currentScrollPosition >= appearAt && !visible) {
+      setVisible(true);
 
       // Drop animation when layer appears
       gsap.to(modelRef.current.position, {
@@ -61,16 +66,21 @@ const PizzaLayer = ({ layerType, position, rotation, scale, scrollY, appearAt, f
       });
     }
 
-    //reset animation when scroll up
-    if (scrollY < appearAt && visible) {
-      setVisible(false);
-      gsap.to(modelRef.current.position, {
-        y: yPos,
-        duration: 0, // Instant reset
-        ease: "none"
-      });
+     // Scroll Up Animations (Reverse)
+    if (currentScrollPosition < appearAt && visible) {
+          // Use initialY to reset position
+        gsap.to(modelRef.current.position, {
+            y: initialY, // Move it back to its initial (hidden) position
+            duration: 0.8, // Reduced duration
+            ease: "power2.out", // Adjust the easing as needed
+            onComplete: () => {
+                setVisible(false); // Hide the element after the animation completes
+            },
+        });
     }
-  }, [scrollY, appearAt, visible, finalY, yPos]);
+
+  }, [scrollY, appearAt, visible, finalY, initialY]); // Include initialY in dependency array
+
 
   // Add a subtle rotation
   useFrame((state) => {
@@ -79,10 +89,11 @@ const PizzaLayer = ({ layerType, position, rotation, scale, scrollY, appearAt, f
     }
   });
 
+
   return (
     <group
       ref={modelRef}
-      position={[position[0], visible ? yPos : position[1] + 10, position[2]]}
+      position={[position[0], visible ? finalY : initialY, position[2]]} // Use finalY or initialY
       rotation={rotation}
       scale={scale}
       visible={visible}
@@ -311,6 +322,7 @@ export function Hero3D() {
                     appearAt={100}
                     finalY={0}
                     color="#E2A96A"
+                    initialY={10} // Start 10 units above
                   />
 
                   {/* Sauce Layer */}
@@ -323,6 +335,7 @@ export function Hero3D() {
                     appearAt={400}
                     finalY={0.2}
                     color="#C53030"
+                    initialY={10} // Start 10 units above
                   />
 
                   {/* Cheese Layer */}
@@ -335,6 +348,7 @@ export function Hero3D() {
                     appearAt={700}
                     finalY={0.4}
                     color="#FDF6B2"
+                    initialY={10} // Start 10 units above
                   />
 
                   {/* Toppings */}
@@ -345,7 +359,10 @@ export function Hero3D() {
                     scale={1}
                     scrollY={scrollY}
                     appearAt={1000}
-                    finalY={0.6} color={undefined}                  />
+                    finalY={0.6}
+                    color={undefined}
+                    initialY={10} // Start 10 units above
+                  />
                 </Suspense>
               </group>
               <ScrollTracker setScrollY={setScrollY} />
